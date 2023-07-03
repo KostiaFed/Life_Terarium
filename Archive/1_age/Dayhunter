@@ -1,0 +1,1 @@
+{:name=>"Dayhunter", :discription=>"I generation meateater", :color=>"#82888b", :mother_period=>80, :energy=>98, :brain=>{:energy_enough=>[0, -1], :energy_not_enough=>[3, -3], :isday=>[4, 0]}, :eat_type=>"meat"}

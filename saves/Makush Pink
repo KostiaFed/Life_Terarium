@@ -1,0 +1,1 @@
+{:name=>"Makush Pink", :discription=>"II generation of all-eaters", :color=>"#9d86af", :memory=>[60], :organs=>[:leaf, :jaw, :herbal], :energy=>50, :brain=>{:energy_enough=>[0, 73], :sight_alive=>[8, 49], :sight_like_me=>[6, 127], :isday=>[3, -2], :sight_corpse=>[7, 0]}}

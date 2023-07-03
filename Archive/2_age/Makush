@@ -1,0 +1,1 @@
+{:name=>"Makush", :discription=>"II generation of all-eaters", :color=>"#91bb82", :memory=>[60], :energy=>56, :brain=>{:energy_enough=>[0, -12], :sight_alive=>[8, -26], :isday=>[3, -50], :sight_like_me=>[6, 7]}}

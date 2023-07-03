@@ -1,0 +1,1 @@
+{:name=>"Unitrof", :discription=>"I generation of all-eater", :color=>"#86a980", :energy=>34, :brain=>{:energy_enough=>[0, 6], :sight_alive=>[8, 63], :sight_corpse=>[7, -5], :isday=>[3, -11], :alone=>[3, 1]}, :memory => [60]}

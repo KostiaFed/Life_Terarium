@@ -1,0 +1,1 @@
+{:name=>"Makush Hardteter", :discription=>"I generation of plant", :color=>"#818ea8", :memory=>[60], :organs=>[:leaf, :herbal], :energy=>61, :brain=>{:energy_enough=>[0, 71], :sight_corpse=>[7, -35], :sight_like_me=>[6, 128], :isday=>[3, 0]}}

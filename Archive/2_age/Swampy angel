@@ -1,0 +1,1 @@
+{:name=>"Swampy angel", :discription=>"II generation of Unitrof", :color=>"#83b28c", :memory=>[60], :energy=>1274, :brain=>{:energy_enough=>[4, 0], :sight_alive=>[8, 53], :isday=>[3, -86], :sight_like_me=>[5, 309], :sight_corpse=>[7, 16], :alone=>[0, -9]}}

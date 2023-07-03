@@ -1,0 +1,1 @@
+{:name=>"High Dayhunter", :discription=>"II generation of meateaters", :color=>"#89928d", :mother_period=>90, :energy=>74, :brain=>{:energy_enough=>[0, 4], :energy_not_enough=>[3, -2], :isday=>[4, -1], :sight_meat_eat=>[4, 0], :sight_like_me=>[2, 0], :alone=>[2, 0]}, :eat_type=>"meat"}

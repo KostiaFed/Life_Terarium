@@ -1,0 +1,1 @@
+{:name=>"Makush alkash", :discription=>"II generation of all-eaters", :color=>"#7f9ba1", :memory=>[60], :organs=>[:leaf, :jaw], :energy=>77, :brain=>{:energy_enough=>[0, 71], :sight_alive=>[8, 49], :sight_corpse=>[7, -35], :sight_like_me=>[6, 128], :isday=>[3, -1], :alone=>[7, -2]}}
