@@ -1,0 +1,1 @@
+{:name=>"Gribok", :discription=>"II generation of meateater", :color=>"#958684", :memory=>[501], :organs=>[:jaw], :energy=>4165, :brain=>{:energy_not_enough=>[6, 0], :sight_jaw=>[9, -1], :sight_like_me=>[13, 0], :sight_leaf=>[8, 0], :sight_needle=>[3, 0], :hp_not_enough=>[9, 0], :isnight=>[0, 0], :sight_corpse=>[17, 0]}, :night_gain=>0}

@@ -1,0 +1,1 @@
+{:name=>"Snail", :discription=>"I generation of meateater", :color=>"#8a818b", :memory=>[501], :organs=>[:jaw], :energy=>1024, :brain=>{:energy_enough=>[0, 5], :energy_not_enough=>[6, 0], :sight_jaw=>[8, 1], :isnight=>[17, -2], :sight_free=>[2, -1], :sight_like_me=>[14, -2], :sight_leaf=>[8, 0], :sight_needle=>[3, 0]}, :night_gain=>0}

@@ -12,53 +12,17 @@ HP_PRICE = 25
 BRAIN_START = 280
 WORLD_COLOR = '#3b3b3b'
 SEED = Random.new
-DAY = 10
+DAY = 20
 NIGHT = 0
 ORGANS_TAX = 3
 
 TRIGGERS = %i[
-  energy_enough
-  energy_not_enough
-  alone
-  not_alone
-  sight_like_me
-  sight_alive
-  sight_corpse
-  sight_free
-  isday
-  isnight
-  sight_jaw
-  sight_herbal
-  sight_leaf
-  sight_needle
-  hp_enough
-  hp_not_enough
 ]
 
 REACTIONS = %i[
-  born
-  burst
-  move
-  photosynthesis
-  grow_hp
-  change_sight
-  change_sight_to_next
-  digest
-  hunt
-  suck
-  change_memory_to_next
-  remember_energy
-  remember_hp
-  donate_energy
-  increment
-  decrement
 ]
 
 ORGANS = %i[
-  leaf
-  jaw
-  herbal
-  needle
 ]
 
 LENTHOFDAY = 100
@@ -226,12 +190,9 @@ class World
     @life = []
     @saves = []
     
-    iterator = 0
     Dir["saves/*"].each do |save|
       save.slice! "saves/"
-      @saves.push(save)
-      LMT[iterator].text = save
-      iterator += 1
+      add_save(save)
     end
 
     100.times do |j|
@@ -244,7 +205,7 @@ class World
 
   def add_save(save)
     @saves.push(save)
-    LMT[@saves.size-1].text = save
+    LMT[@saves.size-1].text = save if @saves.size <= LMT.size
   end
 
   def get_place(x, y)
@@ -356,207 +317,15 @@ class Neiron
 ###############################################################
   #### EVENTS (always return boolean)
 
-  def self.energy_enough(bacteria)
-    bacteria.energy >= bacteria.memory[bacteria.actual_memory]
-  end
-
-  def self.energy_not_enough(bacteria)
-    bacteria.energy < bacteria.memory[bacteria.actual_memory]
-  end
-
-  def self.hp_enough(bacteria)
-    bacteria.hp >= bacteria.memory[bacteria.actual_memory]
-  end
-
-  def self.hp_not_enough(bacteria)
-    bacteria.hp < bacteria.memory[bacteria.actual_memory]
-  end
-
-  def self.alone(bacteria)
-    bacteria.current_cell.alives.size == 0
-  end
-
-  def self.not_alone(bacteria)
-    bacteria.current_cell.alives.size != 0
-  end
-
-  def self.sight_like_me(bacteria)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    !sight.homie.nil? ? how_far_color(sight.homie.color, bacteria.color) < 5 : false
-  end
-
-  def self.sight_alive(bacteria)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    !sight.homie.nil? ? !sight.homie.corpse : false
-  end
-
-  def self.sight_corpse(bacteria)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    !sight.homie.nil? ? sight.homie.corpse : false
-  end
-
-  def self.sight_free(bacteria)
-    bacteria.current_cell.sight_neigh(bacteria.sight).homie.nil?
-  end
-
-  def self.isday(bacteria)
-    WORLD.sun.photon == DAY
-  end
-
-  def self.isnight(bacteria)
-    WORLD.sun.photon == NIGHT
-  end
-
-  def self.sight_jaw(bacteria)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    !sight.homie.nil? ? sight.homie.organs.include?(:jaw) : false
-  end
-
-  def self.sight_herbal(bacteria)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    !sight.homie.nil? ? sight.homie.organs.include?(:herbal) : false
-  end
-
-  def self.sight_leaf(bacteria)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    !sight.homie.nil? ? sight.homie.organs.include?(:leaf) : false
-  end
-
-  def self.sight_needle(bacteria)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    !sight.homie.nil? ? sight.homie.organs.include?(:needle) : false
+  def self.example(bacteria)
+    true
   end
 
   ##########################################################
   #### REACTIONS
 
-  def self.change_sight(bacteria)
-    bacteria.sight = Neiron.just_directions
-  end
-
-  def self.remember_energy(bacteria)
-    bacteria.memory.push(bacteria.energy)
-  end
-
-  def self.remember_hp(bacteria)
-    bacteria.memory.push(bacteria.hp)
-  end
-
-  def self.increment(bacteria)
-    bacteria.memory[bacteria.actual_memory] += 1
-  end
-
-  def self.decrement(bacteria)
-    bacteria.memory[bacteria.actual_memory] -= 1
-  end
-
-  def self.change_memory_to_next(bacteria)
-    bacteria.actual_memory += 1
-    bacteria.actual_memory = 0 if bacteria.actual_memory >= bacteria.memory.size 
-  end
-
-  def self.donate_energy(bacteria)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    target = sight.homie if !sight.homie.nil? && !sight.homie.corpse
-
-    if !target.nil? && bacteria.energy > bacteria.memory[bacteria.actual_memory]
-      target.energy += bacteria.memory[bacteria.actual_memory]
-    end
-  end
-
-  def self.grow_hp(bacteria)
-    return if bacteria.energy <= HP_PRICE
-
-    bacteria.hp += 1
-    bacteria.energy -= HP_PRICE
-  end
-
-  def self.born(bacteria)
-    return if bacteria.energy < HP_PRICE * 2
-
-    free = bacteria.current_cell.free
-    return unless free.size > 1
-
-    bacteria.energy -= HP_PRICE * 2
-    2.times do
-      WORLD.life.push(return_babie(bacteria, directions(free)))
-      free = bacteria.current_cell.free
-    end
-
-    bacteria.full_death
-  end
-
-  def self.photosynthesis(bacteria)
-    return unless bacteria.organs.include?(:leaf)
-    bacteria.energy += WORLD.sun.photon
-  end
-
-  def self.digest(bacteria)
-    return unless bacteria.organs.include?(:herbal)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    target = sight.homie if !sight.homie.nil? && sight.homie.corpse
-
-    unless target.nil?
-      bacteria.energy += target.hp * HP_PRICE
-      target.energy = 0
-      target.disappeared = true
-    end
-  end
-
-  def self.hunt(bacteria)
-    return unless bacteria.organs.include?(:jaw)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    target = sight.homie if !sight.homie.nil? && !sight.homie.corpse
-
-    if !target.nil? && (target.hp <= bacteria.hp)
-      bacteria.energy += target.energy + target.hp * HP_PRICE
-      target.full_death
-    end
-  end
-
-  def self.suck(bacteria)
-    return unless bacteria.organs.include?(:needle)
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    target = sight.homie if !sight.homie.nil? && !sight.homie.corpse
-
-    if !target.nil?
-      suck_count = bacteria.hp * HP_PRICE
-      if suck_count >= target.energy
-        bacteria.energy += suck_count
-        target.energy -= suck_count
-      else
-        bacteria.energy += target.energy
-        target.energy = 0
-      end
-    end
-  end
-
-  def self.burst(bacteria)
-    # kill all alive in 3n3
-    bacteria.current_cell.homies.each do |sad|
-      sad.homie.death
-    end
-
-    bacteria.death
-  end
-
-  def self.move(bacteria)
-    current_cell = bacteria.current_cell
-    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
-    place = sight.homie if sight.homie.nil?
-    return if place.nil?
-
-    current_cell.set_color(WORLD_COLOR)
-    current_cell.homie = nil
-
-    bacteria.current_cell = place
-    bacteria.current_cell.homie = bacteria
-    bacteria.current_cell.set_color(bacteria.color)
-  end
-
-  def self.change_sight_to_next(bacteria)
-    bacteria.sight += 1
-    bacteria.sight = 0 if bacteria.sight > 7
+  def self.example(bacteria)
+    bacteria.example
   end
 
   ####################################################
@@ -671,7 +440,7 @@ class Neiron
 
     organ = ORGANS[organed]
 
-    if formed == 0
+    if formed == 0 && organs.size > 0
       organs.delete_at(SEED.rand(organs.size))
     elsif formed == 1
       organs.push(organ)
@@ -781,7 +550,7 @@ class Bacteria
       memory: @memory,
       organs: @organs,
       energy: @energy,
-      brain: @brain,
+      brain: @brain
     }
     File.open('saves/' + name, 'w') { |f| f.write save_hash.to_s}
   end
@@ -962,12 +731,13 @@ on :key_down do |event|
     end
   elsif event.key == '2'
     first_brain = {
-      energy_enough: [0, 5],
-      energy_not_enough: [3, 0]
+      #energy_enough: [0, 5],
+      #energy_not_enough: [3, 0]
     }
 
     # Place where we create our first bacteria
-    WORLD.life.push(Bacteria.new('#777777', WORLD.map[50][50], 50, first_brain, [100], [:leaf]))
+    #color, current_cell, energy, brain, memory, organs, name = 'Unknown', discription = 'Unknown'
+    WORLD.life.push(Bacteria.new('#777777', WORLD.map[50][50], 50, first_brain, [300], [:leaf], 'Adam', 'the First'))
   elsif event.key == 'p'
     PAUSE = !PAUSE
   elsif event.key == '4'

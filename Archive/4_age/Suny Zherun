@@ -1,0 +1,1 @@
+{:name=>"Suny Zherun", :discription=>"II generation of antibiotic", :color=>"#808280", :memory=>[501], :organs=>[:leaf], :energy=>393, :brain=>{:energy_enough=>[0, 5], :energy_not_enough=>[3, 0], :sight_jaw=>[9, 0], :isnight=>[17, -1], :sight_free=>[3, 0], :sight_like_me=>[14, -1]}, :night_gain=>0}
