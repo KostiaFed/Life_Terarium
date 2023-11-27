@@ -1,6 +1,13 @@
+WINDOW_SIZE_COO = 0.8 #Use it to correct window size
+def self.ws(convert)
+  convert * WINDOW_SIZE_COO
+end
+
+CELL_SIZE = 10 * WINDOW_SIZE_COO
+
 require 'ruby2d'
 
-set width: 1200, height: 990
+set width: ws(1200), height: ws(990)
 
 ###############################################################
 #
@@ -14,19 +21,63 @@ WORLD_COLOR = '#3b3b3b'
 SEED = Random.new
 DAY = 20
 NIGHT = 0
-ORGANS_TAX = 3
+SUN_TAX = 8
 
 TRIGGERS = %i[
+  nothing_happens
+  is_day
+  is_night
+  alone
+  not_alone
+  sight_like_me
+  sight_alive
+  sight_corpse
+  sight_free
+  memory_like_me
+  memory_empty
+  memory_not_empty
 ]
 
+# to donate_energy need to know minimal portion of donation
 REACTIONS = %i[
+  born
+  photosynthesis
+  burst
+  move
+  grow_hp
+  suck
+  digest
+  hunt
+  change_sight_to_next
+  change_sight_to_north
+  change_sight_to_west
+  change_sight_to_south
+  change_sight_to_east
+  remember_color
+  next_memory
+  forget_actual_memoria
+  forget_last_memoria
+  clear_memory
 ]
 
 ORGANS = %i[
 ]
 
+BRAIN_MUTATORS = %i[
+  new_neiron_reaction
+  delete_neiron
+  increment_width
+  decrement_width
+  delete_reaction
+]
+
+ORGAN_MUTATORS = %i[
+  delete_organ
+  add_organ
+]
+
 LENTHOFDAY = 100
-DAYLONGER = 20
+DAYLONGER = 200
 PAUSE = false
 
 ###############################################################
@@ -43,19 +94,19 @@ BRAINS_TEXTS = []
 #                        
 ###############################################################
 
-BACTERIA_PREVIEW = Square.new(x: 1010, y: 10, size: 180, color: '#aaaaaa')
+BACTERIA_PREVIEW = Square.new(x: ws(1010), y: ws(10), size: ws(180), color: '#aaaaaa')
 
 BRAIN_TEXT_SIZE = 10
 
 Rectangle.new(
-  x: 1010, y: 700,
-  width: 2, height: 150,
+  x: ws(1010), y: ws(700),
+  width: ws(2), height: ws(150),
   color: 'white'
 )
 
 Rectangle.new(
-  x: 1010, y: 700,
-  width: 180, height: 2,
+  x: ws(1010), y: ws(700),
+  width: ws(180), height: ws(2),
   color: 'white'
 )
 
@@ -64,35 +115,35 @@ load_menu = []
 #load_menu_titles
 LMT = []
 
-load_menu_button_first_x = 1015
-load_menu_button_first_y = 705
-load_menu_width = 170
-load_menu_height = 20
-load_menu_void = 2
+load_menu_button_first_x = ws(1015)
+load_menu_button_first_y = ws(705)
+load_menu_width = ws(170)
+load_menu_height = ws(20)
+load_menu_void = ws(2)
 load_menu_count = 5
 
 load_menu_full_height = load_menu_height * load_menu_count + load_menu_void * load_menu_count
 
 load_menu_count.times do |i|
   load_menu.push(Rectangle.new(
-    x: 1015, y: 705 + i*22,
-    width: 170, height: 20,
+    x: ws(1015), y: ws(705 + i*22),
+    width: ws(170), height: ws(20),
     color: '#c2c2c2'
   ))
   LMT.push(
     Text.new(
       '',
-      x: 1015, y: 705 + i*22,
-      size: 18,
+      x: ws(1015), y: ws(705 + i*22),
+      size: ws(18),
       color: 'black'
     )
   )
 end
 
-save_button_x = 1010
-save_button_y = 880
-save_button_width = 180
-save_button_height = 20
+save_button_x = ws(1010)
+save_button_y = ws(880)
+save_button_width = ws(180)
+save_button_height = ws(20)
 
 save_button = Rectangle.new(
   x: save_button_x, y: save_button_y,
@@ -109,43 +160,43 @@ end
 
 Text.new(
   'SAVE',
-  x: 1075, y: 878,
-  size: 18,
+  x: ws(1075), y: ws(878),
+  size: ws(18),
   color: 'black'
 )
 
 population_text = Text.new(
   'World population: 0',
-  x: 1010, y: 900,
-  size: 16,
+  x: ws(1010), y: ws(900),
+  size: ws(16),
   color: 'white'
 )
 
 NAME_TEXT = Text.new(
   'Name: -',
-  x: 1010, y: BRAIN_START - 80,
-  size: 20,
+  x: ws(1010), y: ws(BRAIN_START - 80),
+  size: ws(20),
   color: 'white'
 )
 
 DISCRIPTION_TEXT = Text.new(
   'Discription: -',
-  x: 1010, y: BRAIN_START - 60,
-  size: 20,
+  x: ws(1010), y: ws(BRAIN_START - 60),
+  size: ws(20),
   color: 'white'
 )
 
 ENERGY_TEXT = Text.new(
   'Energy: 0',
-  x: 1010, y: BRAIN_START - 40,
-  size: 20,
+  x: ws(1010), y: ws(BRAIN_START - 40),
+  size: ws(20),
   color: 'white'
 )
 
 HP_TEXT = Text.new(
   'HP: 0',
-  x: 1010, y: BRAIN_START - 20,
-  size: 20,
+  x: ws(1010), y: ws(BRAIN_START - 20),
+  size: ws(20),
   color: 'white'
 )
 
@@ -158,6 +209,12 @@ HP_TEXT = Text.new(
 class Sun
   def initialize
     @ite = 0
+  end
+
+  def is_night
+    return 'Night' if @ite > LENTHOFDAY + DAYLONGER
+
+    'Day'
   end
 
   def photon
@@ -198,7 +255,7 @@ class World
     100.times do |j|
       @map.push([])
       100.times do |i|
-        @map[j].push(Cell.new(Square.new(x: i * 10, y: j * 10, size: 10, color: WORLD_COLOR), i, j))
+        @map[j].push(Cell.new(Square.new(x: i * CELL_SIZE, y: j * CELL_SIZE, size: CELL_SIZE, color: WORLD_COLOR), i, j))
       end
     end
   end
@@ -226,13 +283,19 @@ end
 #
 ###############################################################
 class Cell
-  attr_accessor :neighs, :homie
+  attr_accessor :neighs, :homie, :sun_tax
 
   def initialize(body, x_id, y_id)
     @body = body
     @x_id = x_id
     @y_id = y_id
     @homie = nil
+
+    if (@y_id > 5 && @y_id < 25) || (@x_id > 5 && @x_id < 25) || (@y_id > 65 && @y_id < 85) || (@x_id > 65 && @x_id < 88)
+      @sun_tax = SUN_TAX
+    else
+      @sun_tax = 0
+    end
   end
 
   def cash_neigh
@@ -315,17 +378,205 @@ WORLD = World.new
 
 class Neiron
 ###############################################################
-  #### EVENTS (always return boolean)
+  #### TRIGGERS (always return boolean)
+  def self.alone(bacteria)
+    bacteria.current_cell.alives.size == 0
+  end
 
-  def self.example(bacteria)
+  def self.not_alone(bacteria)
+    bacteria.current_cell.alives.size != 0
+  end
+
+  def self.sight_like_me(bacteria)
+    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
+    !sight.homie.nil? ? how_far_color(sight.homie.color, bacteria.color) < 5 : false
+  end
+
+  def self.sight_alive(bacteria)
+    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
+    !sight.homie.nil? ? !sight.homie.corpse : false
+  end
+
+  def self.sight_corpse(bacteria)
+    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
+    !sight.homie.nil? ? sight.homie.corpse : false
+  end
+
+  def self.sight_free(bacteria)
+    bacteria.current_cell.sight_neigh(bacteria.sight).homie.nil?
+  end
+
+  def self.memory_like_me(bacteria)
+    return if bacteria.memory.size == 0
+
+    how_far_color(bacteria.memory[bacteria.actual_memory], bacteria.color) < 5
+  end
+
+  def self.memory_empty(bacteria)
+    bacteria.memory.size == 0
+  end
+
+  def self.memory_not_empty(bacteria)
+    bacteria.memory.size != 0
+  end
+
+  def self.clear_memory(bacteria)
+    bacteria.memory.clear
+  end
+
+  def self.nothing_happens(bacteria)
     true
+  end
+
+  def self.is_day(bacteria)
+    !WORLD.sun.is_night
+  end
+
+  def self.is_night(bacteria)
+    WORLD.sun.is_night
   end
 
   ##########################################################
   #### REACTIONS
+  def self.change_sight_to_east(bacteria)
+    bacteria.sight = 4
+  end
 
-  def self.example(bacteria)
-    bacteria.example
+  def self.change_sight_to_south(bacteria)
+    bacteria.sight = 6
+  end
+
+  def self.change_sight_to_west(bacteria)
+    bacteria.sight = 3
+  end
+
+  def self.change_sight_to_north(bacteria)
+    bacteria.sight = 1
+  end
+
+  def self.change_sight_to_next(bacteria)
+    bacteria.sight += 1
+    bacteria.sight = 0 if bacteria.sight > 7
+  end
+
+  def self.burst(bacteria)
+    # kill all alive in 3n3
+    bacteria.current_cell.homies.each do |sad|
+      sad.homie.death
+    end
+
+    bacteria.death
+  end
+
+  def self.move(bacteria)
+    current_cell = bacteria.current_cell
+    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
+    place = sight.homie if sight.homie.nil?
+    return if place.nil?
+
+    current_cell.set_color(WORLD_COLOR)
+    current_cell.homie = nil
+
+    bacteria.current_cell = place
+    bacteria.current_cell.homie = bacteria
+    bacteria.current_cell.set_color(bacteria.color)
+  end
+
+  def self.grow_hp(bacteria)
+    return if bacteria.energy <= HP_PRICE
+
+    bacteria.hp += 1
+    bacteria.energy -= HP_PRICE
+  end
+
+  def self.suck(bacteria)
+    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
+    target = sight.homie if !sight.homie.nil? && !sight.homie.corpse
+
+    if !target.nil?
+      suck_count = bacteria.hp * HP_PRICE
+      if suck_count >= target.energy
+        bacteria.energy += suck_count
+        target.energy -= suck_count
+      else
+        bacteria.energy += target.energy
+        target.energy = 0
+      end
+    end
+  end
+
+  def self.digest(bacteria)
+    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
+    target = sight.homie if !sight.homie.nil? && sight.homie.corpse
+
+    unless target.nil?
+      bacteria.energy += target.hp * HP_PRICE
+      target.energy = 0
+      target.disappeared = true
+    end
+  end
+
+  def self.hunt(bacteria)
+    sight = bacteria.current_cell.sight_neigh(bacteria.sight)
+    target = sight.homie if !sight.homie.nil? && !sight.homie.corpse
+
+    if !target.nil? && (target.hp <= bacteria.hp)
+      bacteria.energy += target.energy + target.hp * HP_PRICE
+      target.full_death
+    end
+  end
+
+  def self.photosynthesis(bacteria)
+    pot_b = WORLD.sun.photon - bacteria.current_cell.sun_tax
+    buff = 0
+    buff = pot_b if pot_b
+    bacteria.energy += buff
+  end
+
+  def self.born(bacteria)
+    return if bacteria.energy < HP_PRICE * 2
+
+    free = bacteria.current_cell.free
+    return unless free.size > 1
+
+    bacteria.energy -= HP_PRICE * 2
+    2.times do
+      WORLD.life.push(return_babie(bacteria, directions(free)))
+      free = bacteria.current_cell.free
+    end
+
+    bacteria.full_death
+  end
+
+  def self.remember_color(bacteria)
+    return if bacteria.current_cell.sight_neigh(bacteria.sight).homie.nil?
+
+    bacteria.memory.push(bacteria.current_cell.sight_neigh(bacteria.sight).homie.color)
+  end
+
+  def self.next_memory(bacteria)
+    if bacteria.memory.size - 1 > bacteria.actual_memory
+      bacteria.actual_memory += 1
+    else
+      bacteria.actual_memory = 0
+    end
+  end
+
+  def self.remember_hp(bacteria)
+    bacteria.memory.push(bacteria.hp)
+  end
+
+  def self.remember_energy(bacteria)
+    bacteria.memory.push(bacteria.energy)
+  end
+
+  def self.forget_actual_memoria(bacteria)
+    bacteria.memory.delete_at(bacteria.actual_memory) 
+    bacteria.actual_memory = 0
+  end
+
+  def self.forget_last_memoria(bacteria)
+    bacteria.memory.pop
   end
 
   ####################################################
@@ -334,7 +585,9 @@ class Neiron
   def self.print_brain(brain)
     string = []
     brain.each do |key, value|
-      string.push(key.to_s + ': ' + REACTIONS[value[0]].to_s + ' | ' + value[1].to_s)
+      value.each do |val|
+        string.push(key.to_s + ': ' + REACTIONS[val[0]].to_s + ' | ' + val[1].to_s)
+      end
     end
     string
   end
@@ -371,6 +624,9 @@ class Neiron
   end
 
   def self.how_far_color(color1, color2)
+    return 255 if color1.nil? || color2.nil?
+    return 255 if color1.size != 7 || color2.size != 7 || color1[0] != '#' || color2[0] != '#'
+
     rgb1 = [
       color1[1..2].hex,
       color1[3..4].hex,
@@ -430,54 +686,128 @@ class Neiron
     '#' + rgb[0].to_s(16).rjust(2, '0') + rgb[1].to_s(16).rjust(2, '0') + rgb[2].to_s(16).rjust(2, '0')
   end
 
+  #### ORGANS MUTATORS ####
+
+  def self.delete_organ(organs)
+    return if organs.empty?
+
+    organed = SEED.rand(organs.size)
+    organs.keys[organed] = organs.keys[organed] - 1 unless organs.keys[organed] < 1
+
+    organs
+  end
+
+  def self.add_organ(organs)
+    organed = SEED.rand(ORGANS.size)
+    organ = ORGANS[organed]
+
+    unless organs[organ].nil?
+      organs[organ] = organs[organ] + 1 || 0
+    else
+      organs[organ] = 0
+    end
+
+  end
+
   def self.organs_mutane(old_organs, seeded)
-    organs = old_organs.clone
+    return if ORGANS.size == 0
+
+    organs = {}
+
+    old_organs.each do |key, old_organ|
+      organs[key] = old_organ.clone
+    end
 
     return organs unless seeded == 0
 
     formed = SEED.rand(2)
-    organed = SEED.rand(ORGANS.size)
 
-    organ = ORGANS[organed]
-
-    if formed == 0 && organs.size > 0
-      organs.delete_at(SEED.rand(organs.size))
-    elsif formed == 1
-      organs.push(organ)
-    end
+    organs = Neiron.send(ORGAN_MUTATORS[formed], organs)
 
     organs
+  end
+
+  #### MUTATOR METHODS ####
+
+  def self.delete_reaction(brain)
+    return if brain.empty?
+
+    neironed = SEED.rand(brain.size)
+    neiron = brain.keys[neironed]
+    reaction = SEED.rand(brain[neiron].size) unless brain[neiron].size == 0 
+    
+    brain[neiron].delete_at(brain[neiron].index(reaction) || brain[neiron].length)
+
+    brain
+  end
+
+  def self.decrement_width(brain)
+    return if brain.empty?
+
+    neironed = SEED.rand(brain.size)
+    neiron = brain.keys[neironed]
+    reaction = SEED.rand(brain[neiron].size) unless brain[neiron].size == 0
+    
+    brain[neiron][reaction][1] += -1
+    brain[neiron][reaction][1] = -100 if brain[neiron][reaction][1] < -100
+
+    brain
+  end
+
+  def self.increment_width(brain)
+    return if brain.empty?
+
+    neironed = SEED.rand(brain.size)
+    neiron = brain.keys[neironed]
+    reaction = SEED.rand(brain[neiron].size) unless brain[neiron].size == 0
+    
+    brain[neiron][reaction][1] += 1
+
+    brain
+  end
+
+  def self.delete_neiron(brain)
+    return if brain.empty?
+    
+    neironed = SEED.rand(brain.size)
+    neiron = brain.keys[neironed]
+
+    brain.delete(neiron)
+
+    brain
+  end
+
+  def self.new_neiron_reaction(brain)
+    neironed = SEED.rand(TRIGGERS.size)
+    neiron = TRIGGERS[neironed]
+
+    unless brain[neiron].nil?
+      brain[neiron].push([SEED.rand(REACTIONS.size), 0])
+    else
+      brain[neiron] = [[SEED.rand(REACTIONS.size), 0]]
+    end
+
+    brain
   end
 
   def self.brain_mutane(old_brain, seeded)
     brain = {}
     
-    old_brain.each do |old_neiron|
-      brain[old_neiron[0]] = old_neiron[1].clone
+    old_brain.each do |key, old_value|
+      old_value.each do |old_reaction|
+        unless brain[key].nil?
+          brain[key].push(old_reaction.clone)
+        else
+          brain[key] = [old_reaction.clone]
+        end
+      end
     end
 
     return brain unless seeded == 0
 
-    # add new neiron or delete or add/minus width
-    formed = SEED.rand(4)
+    formed = SEED.rand(5)
 
-    neironed = SEED.rand(TRIGGERS.size)
-
-    # there we need const that = count of reactions
-    value = [SEED.rand(REACTIONS.size), 0]
-    neiron = TRIGGERS[neironed]
-    if formed == 0
-      brain[neiron] = value
-    elsif formed == 1
-      brain.delete(neiron)
-    elsif formed == 2
-      brain[neiron][1] += 1 unless brain[neiron].nil?
-    elsif formed == 3
-      unless brain[neiron].nil?
-        brain[neiron][1] -= 1
-        brain[neiron][1] = -100 if brain[neiron][1] < -100
-      end
-    end
+    brain = Neiron.send(BRAIN_MUTATORS[formed], brain)
 
     brain
   end
@@ -532,7 +862,7 @@ class Bacteria
     energy = bacteria[:energy]
     memory = bacteria[:memory]
     brain = bacteria[:brain]
-    organs = bacteria[:organs]
+    organs = bacteria[:organs] || {}
     name = bacteria[:name]
     discription = bacteria[:discription]
 
@@ -552,6 +882,7 @@ class Bacteria
       energy: @energy,
       brain: @brain
     }
+    Dir.mkdir("saves") unless Dir.exist?("saves")
     File.open('saves/' + name, 'w') { |f| f.write save_hash.to_s}
   end
 
@@ -560,6 +891,7 @@ class Bacteria
     @disappeared = true
   end
 
+  #REFACTORY!
   def add_energy
     death if @energy <= 0
 
@@ -573,22 +905,30 @@ class Bacteria
 
     return if queue.empty?
 
-    width = -100
+    reactions_queue = []
 
-    queue.each do |n|
-      width = brain[n][1] if brain[n][1] > width
+    queue.each do |neiron_name|
+      brain[neiron_name].each do |reaction|
+        reactions_queue.push(reaction)
+      end
     end
 
-    last_queue = []
-    queue.each do |n|
-      last_queue.push(n) if brain[n][1] == width
+    while reactions_queue.size > 1 do
+      temp_r_queue = []
+
+      reactions_queue.each do |reaction|
+        temp_r_queue.push(reaction) if SEED.rand(200) < reaction[1] + 100
+      end
+
+      unless reactions_queue.size - temp_r_queue.size < 1
+        temp_r_queue.each do |tmp_r| 
+          reactions_queue.delete_at(reactions_queue.index(tmp_r) || reactions_queue.length) 
+        end
+      end
     end
 
-    will_do = last_queue[SEED.rand(last_queue.size)]
-    reaction = REACTIONS[brain[will_do][0]]
-    Neiron.send(reaction, self)
-    
-    @energy -= ORGANS_TAX * organs.size
+    @energy -= 1
+    Neiron.send(REACTIONS[reactions_queue[0][0]], self)
   end
 
   def death
@@ -624,8 +964,8 @@ on :mouse_down do |event|
   # Read the button event
   case event.button
   when :left
-    x = (event.x / 10).to_i
-    y = (event.y / 10).to_i
+    x = (event.x / CELL_SIZE).to_i
+    y = (event.y / CELL_SIZE).to_i
 
     if coordinate_in_form(event.x, event.y, save_button_x, save_button_y, save_button_width, save_button_height)
       
@@ -686,8 +1026,8 @@ def add_line(text, used_lines)
   if BRAINS_TEXTS[used_lines].nil?
     BRAINS_TEXTS.push(Text.new(
       text,
-      x: 1010, y: BRAIN_START + used_lines * 20,
-      size: BRAIN_TEXT_SIZE,
+      x: ws(1010), y: ws(BRAIN_START + used_lines * 20),
+      size: ws(BRAIN_TEXT_SIZE),
       color: 'white'
     ))
   else
@@ -731,13 +1071,12 @@ on :key_down do |event|
     end
   elsif event.key == '2'
     first_brain = {
-      #energy_enough: [0, 5],
-      #energy_not_enough: [3, 0]
+      nothing_happens: [[1, 10], [0, 0]],
     }
 
     # Place where we create our first bacteria
     #color, current_cell, energy, brain, memory, organs, name = 'Unknown', discription = 'Unknown'
-    WORLD.life.push(Bacteria.new('#777777', WORLD.map[50][50], 50, first_brain, [300], [:leaf], 'Adam', 'the First'))
+    WORLD.life.push(Bacteria.new('#777777', WORLD.map[50][50], 50, first_brain, [], [], 'Adam', 'the First'))
   elsif event.key == 'p'
     PAUSE = !PAUSE
   elsif event.key == '4'
@@ -768,7 +1107,7 @@ update do
 
     WORLD.life = WORLD.life - deads
 
-    population_text.text = 'World population: ' + WORLD.life.size.to_s
+    population_text.text = 'Time: ' + WORLD.sun.is_night
   end
 
   if !chosen.nil?

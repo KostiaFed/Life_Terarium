@@ -1,0 +1,1 @@
+{:name=>"River SquidWard", :discription=>"II generation of Squidwards", :color=>"#81adc3", :memory=>[], :organs=>nil, :energy=>843, :brain=>{:sight_corpse=>[[7, 3], [0, -3]], :sight_free=>[[0, 1], [1, -2]], :sight_like_me=>[[1, -2], [0, 2], [0, 0]], :alone=>[[7, -1], [3, 0]]}}

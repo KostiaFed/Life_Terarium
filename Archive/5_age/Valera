@@ -1,0 +1,1 @@
+{:name=>"Valera", :discription=>"I generation of all-eater", :color=>"#7fc5af", :memory=>[], :organs=>nil, :energy=>34, :brain=>{:sight_corpse=>[[7, 3], [0, -1], [6, 0]], :sight_free=>[[0, 1], [1, -2], [0, -1], [4, 0]], :sight_like_me=>[[1, -4], [0, 2], [0, -1], [6, 0], [8, -1], [12, 0]], :is_day=>[[5, -1]], :sight_alive=>[[7, 1]], :nothing_happens=>[[5, 0]]}}

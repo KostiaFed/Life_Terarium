@@ -1,0 +1,1 @@
+{:name=>"SquidWard", :discription=>"I generation of all-eater", :color=>"#7faec1", :memory=>[], :organs=>nil, :energy=>6, :brain=>{:sight_alive=>[[8, 0], [5, 0], [6, -2], [6, -1], [8, 1], [8, 0]], :sight_corpse=>[[7, 3], [0, -3]], :sight_free=>[[0, 1], [1, -2]], :sight_like_me=>[[1, -3], [0, 2], [0, 0]], :alone=>[[7, 0]]}}
