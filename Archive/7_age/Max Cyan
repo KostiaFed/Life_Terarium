@@ -1,0 +1,2 @@
+{ name: 'Max Cyan', description: 'I generation of Max', color: '#00FFFF', memory: [], organs: %i[jaws sucker],
+  energy: 20, brain: { is_night: [[0, 0], [0, 1]], sight_corpse: [[6, -1], [12, 0], [16, 0]], sight_alive: [[4, 0]], is_day: [[13, 0], [8, 0]], memory_empty: [[7, 0]] } }

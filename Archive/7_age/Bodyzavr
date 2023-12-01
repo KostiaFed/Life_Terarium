@@ -1,0 +1,1 @@
+{:name=>"Bodyzavr", :discription=>"I generation of 7 age", :color=>"#b99ca1", :memory=>[], :organs=>[:jaws, :leaf], :energy=>415, :brain=>{:is_night=>[[0, -1]], :sight_corpse=>[[6, -3], [12, 0], [16, 0]], :not_alone=>[[7, -4]], :sight_alive=>[[4, 0]], :is_day=>[[1, 0]], :memory_not_empty=>[[10, 0], [12, 1]], :memory_empty=>[[1, 0]], :sight_free=>[[6, 0]]}}

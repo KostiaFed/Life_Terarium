@@ -1,0 +1,1 @@
+{:name=>"Gigantum tree", :discription=>"I generation of 7 age", :color=>"#92839f", :memory=>[], :organs=>[:leaf], :energy=>59, :brain=>{:nothing_happens=>[[1, 9], [0, -1]], :is_day=>[[2, 1]], :is_night=>[[4, 0], [4, 0]]}}

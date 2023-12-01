@@ -1,0 +1,1 @@
+{:name=>"Zhenia Blue", :discription=>"I generation of Zhenia", :color=>"#80809c", :memory=>[], :organs=>["leaf"], :energy=>652, :brain=>{:nothing_happens=>[[1, 9], [0, 0]], :sight_corpse=>[[7, 0], [5, 1]], :sight_alive=>[[5, 1]], :is_night=>[[4, 0]]}}

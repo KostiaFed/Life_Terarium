@@ -1,0 +1,1 @@
+{:name=>"Antibiotik", :description=>"I generation of antibiotics", :color=>"#82fec7", :memory=>[], :organs=>[:jaws, :root], :energy=>95, :brain=>{:sight_like_me=>[[13, 4], [1, -1]], :is_day=>[[8, -4]], :sight_alive=>[[7, 0]], :alone=>[[1, -1], [7, 0]], :memory_not_empty=>[[8, 0]], :nothing_happens=>[[0, -1]]}}

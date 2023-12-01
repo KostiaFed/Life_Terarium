@@ -1,0 +1,1 @@
+{:name=>"Elder Max Cyan", :description=>"II generation of Max", :color=>"#7ff1f8", :memory=>[], :organs=>[:jaws, :leaf], :energy=>101, :brain=>{:is_night=>[[0, -1], [0, 1]], :sight_corpse=>[[6, -1], [12, 0], [16, 1]], :sight_alive=>[[4, 3]], :is_day=>[[13, 0], [8, -1]], :memory_empty=>[[7, 3]]}}

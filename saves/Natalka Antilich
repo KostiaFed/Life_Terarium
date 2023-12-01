@@ -1,0 +1,1 @@
+{:name=>"Natalka Antilich", :discription=>"II generation of Natalka", :color=>"#817fab", :memory=>[], :organs=>[:leaf, :root], :energy=>708, :brain=>{:nothing_happens=>[[1, 9], [0, -1]], :is_night=>[[4, -2]], :memory_not_empty=>[[13, 0]], :memory_empty=>[[16, 0]], :alone=>[[15, -1]]}}

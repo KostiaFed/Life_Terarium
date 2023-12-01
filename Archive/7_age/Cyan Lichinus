@@ -1,0 +1,1 @@
+{:name=>"Cyan Lichinus", :discription=>"I generation of 7 age", :color=>"#8e97ab", :memory=>[], :organs=>[:jaws, :root], :energy=>341, :brain=>{:is_night=>[[0, 0]], :sight_corpse=>[[6, -1], [12, 0], [16, 0]], :not_alone=>[[7, -1], [6, 0]], :sight_alive=>[[4, 0]], :is_day=>[[13, 1], [8, 0]]}}

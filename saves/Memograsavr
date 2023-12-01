@@ -1,0 +1,1 @@
+{:name=>"Memograsavr", :description=>"Memograss from 7 age", :color=>"#96edd9", :memory=>["#9dead9", "#98ecdf", "#98ecdf"], :organs=>[:leaf, :root], :energy=>54, :brain=>{:is_night=>[[0, 0], [0, 1], [1, -1], [4, 0]], :sight_alive=>[[4, 1]], :sight_free=>[[1, 0]], :sight_corpse=>[[0, 1], [14, 0]], :memory_like_me=>[[10, 0]], :sight_like_me=>[[5, 0]]}}

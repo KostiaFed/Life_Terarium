@@ -1,0 +1,1 @@
+{:name=>"Elder Blue Tree", :description=>"II generation of Blue Tree", :color=>"#84d6dc", :memory=>[], :organs=>[:leaf], :energy=>1, :brain=>{:is_night=>[[0, 1], [0, 1], [1, -2], [18, 0]], :sight_alive=>[[4, 2], [4, 2]], :sight_like_me=>[[13, 4]], :memory_like_me=>[[9, 2], [4, 0]], :memory_not_empty=>[[4, 0]]}}

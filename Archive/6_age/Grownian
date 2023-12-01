@@ -1,0 +1,1 @@
+{:name=>"Grownian", :discription=>"I generation of grownizavrs", :color=>"#827f93", :memory=>[], :organs=>["leaf"], :energy=>381, :brain=>{:nothing_happens=>[[1, 9], [0, 0]], :sight_corpse=>[[7, 0]], :sight_alive=>[[5, 0]], :is_night=>[[4, 0]]}}
