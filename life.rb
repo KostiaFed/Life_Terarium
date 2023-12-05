@@ -84,11 +84,10 @@ ORGANS = %i[
 ]
 
 BRAIN_MUTATORS = %i[
-  new_neiron_reaction
+  add_neiron
   delete_neiron
   increment_width
   decrement_width
-  delete_reaction
 ]
 
 ORGAN_MUTATORS = %i[
@@ -424,6 +423,45 @@ WORLD = World.new
 
 ###############################################################
 #
+#                          Perceptron
+#
+###############################################################
+
+class Perceptron
+  # symbolyc trigger and symbolyc reaction
+  attr_accessor :trigger, :reaction, :width
+
+  def initialize(trigger, reaction, width)
+    @trigger = trigger
+    @reaction = reaction
+    @width = width || 0
+  end
+
+  def initialize_clone(perceptron)
+    @trigger = perceptron.trigger
+    @reaction = perceptron.reaction
+    @width = perceptron.width
+  end
+
+  def self.deserialize_from_hash(hash)
+    trigger = hash[:trigger]
+    reaction = hash[:reaction]
+    width = hash[:width] || 0
+
+    Perceptron.new(trigger, reaction, width)
+  end
+
+  def to_hash
+    hash = {
+      trigger: @trigger,
+      reaction: @reaction,
+      width: @width
+    }
+  end
+end
+
+###############################################################
+#
 #                            NEIRON
 #
 ###############################################################
@@ -511,6 +549,7 @@ class Neiron
     bacteria.sight = 0 if bacteria.sight > 7
   end
 
+  # broken
   def self.burst(bacteria)
     # kill all alive in 3n3
     bacteria.current_cell.homies.each do |sad|
@@ -666,11 +705,15 @@ class Neiron
 
   def self.print_brain(brain)
     string = []
-    brain.each do |key, value|
-      value.each do |val|
-        string.push(key.to_s + ': ' + REACTIONS[val[0]].to_s + ' | ' + val[1].to_s)
-      end
+
+    brain.each do |perceptron|
+      string.push(
+        perceptron.trigger.to_s +
+        ': ' + perceptron.reaction.to_s +
+        ' | ' + perceptron.reaction.width
+      )
     end
+
     string
   end
 
@@ -807,27 +850,14 @@ class Neiron
 
   #### MUTATOR METHODS ####
 
-  def self.delete_reaction(brain)
-    return if brain.empty?
-
-    neironed = SEED.rand(brain.size)
-    neiron = brain.keys[neironed]
-    reaction = SEED.rand(brain[neiron].size) unless brain[neiron].size == 0
-
-    brain[neiron].delete_at(brain[neiron].index(reaction) || brain[neiron].length)
-
-    brain
-  end
-
   def self.decrement_width(brain)
     return if brain.empty?
 
-    neironed = SEED.rand(brain.size)
-    neiron = brain.keys[neironed]
-    reaction = SEED.rand(brain[neiron].size) unless brain[neiron].size == 0
+    seeded = SEED.rand(brain.size)
+    perceptron = brain[seeded]
 
-    brain[neiron][reaction][1] += -1
-    brain[neiron][reaction][1] = -100 if brain[neiron][reaction][1] < -100
+    perceptron.width += -1
+    perceptron.width = -100 if perceptron.width < -100
 
     brain
   end
@@ -835,11 +865,10 @@ class Neiron
   def self.increment_width(brain)
     return if brain.empty?
 
-    neironed = SEED.rand(brain.size)
-    neiron = brain.keys[neironed]
-    reaction = SEED.rand(brain[neiron].size) unless brain[neiron].size == 0
+    seeded = SEED.rand(brain.size)
+    perceptron = brain[seeded]
 
-    brain[neiron][reaction][1] += 1
+    perceptron.width += 1
 
     brain
   end
@@ -847,38 +876,30 @@ class Neiron
   def self.delete_neiron(brain)
     return if brain.empty?
 
-    neironed = SEED.rand(brain.size)
-    neiron = brain.keys[neironed]
+    seeded = SEED.rand(brain.size)
+    perceptron = brain[seeded]
 
-    brain.delete(neiron)
+    brain.delete(perceptron)
 
     brain
   end
 
-  def self.new_neiron_reaction(brain)
-    neironed = SEED.rand(TRIGGERS.size)
-    neiron = TRIGGERS[neironed]
+  def self.add_neiron(brain)
+    seeded_trigger = SEED.rand(TRIGGERS.size)
+    seeded_reaction = SEED.rand(REACTIONS.size)
+    trigger = TRIGGERS[seeded_trigger]
+    reaction = TRIGGERS[seeded_reaction]
 
-    if brain[neiron].nil?
-      brain[neiron] = [[SEED.rand(REACTIONS.size), 0]]
-    else
-      brain[neiron].push([SEED.rand(REACTIONS.size), 0])
-    end
+    brain.push(Perceptron.new(trigger, reaction, 0))
 
     brain
   end
 
   def self.brain_mutane(old_brain, seeded)
-    brain = {}
+    brain = []
 
-    old_brain.each do |key, old_value|
-      old_value.each do |old_reaction|
-        if brain[key].nil?
-          brain[key] = [old_reaction.clone]
-        else
-          brain[key].push(old_reaction.clone)
-        end
-      end
+    old_brain.each do |perceptron|
+      brain.push(perceptron.clone)
     end
 
     return brain unless seeded == 0
@@ -886,16 +907,8 @@ class Neiron
     formed = SEED.rand(5)
 
     Neiron.send(BRAIN_MUTATORS[formed], brain)
-  end
-end
 
-class Perceptron
-  attr_accessor :trigger, :reaction, :width
-
-  def initialize(trigger, reaction, width)
-    @trigger = trigger
-    @reaction = reaction
-    @width = width || 0
+    brain
   end
 end
 ###############################################################
@@ -952,7 +965,14 @@ class Bacteria
     color = bacteria[:color]
     energy = bacteria[:energy]
     memory = bacteria[:memory]
-    brain = bacteria[:brain]
+
+    deserialized_brain = bacteria[:brain]
+    brain = []
+
+    deserialized_brain.each do |perceptron|
+      brain.push(Perceptron.deserialize_from_hash(perceptron))
+    end
+
     organs = bacteria[:organs] || []
     name = bacteria[:name]
     description = bacteria[:description] || 'Unknown'
@@ -973,12 +993,13 @@ class Bacteria
       memory: @memory,
       organs: @organs,
       energy: @energy,
-      brain: @brain
+      brain: brain.each { |perceptron| perceptron.to_hash }
     }
     Dir.mkdir('saves') unless Dir.exist?('saves')
     File.open('saves/' + name, 'w') { |f| f.write save_hash.to_s }
   end
 
+  ################################################
   # REFACTORY!
   def add_energy
     death if @energy <= 0
@@ -987,37 +1008,31 @@ class Bacteria
 
     queue = []
 
-    TRIGGERS.each do |neiron_name|
-      queue.push(neiron_name) if Neiron.send(neiron_name, self) && !brain[neiron_name].nil?
+    brain.each do |perceptron|
+      queue.push(perceptron) if Neiron.send(perceptron.trigger, self)
     end
 
     return if queue.empty?
 
-    reactions_queue = []
-
-    queue.each do |neiron_name|
-      brain[neiron_name].each do |reaction|
-        reactions_queue.push(reaction)
-      end
-    end
-
-    while reactions_queue.size > 1
+    while queue.size > 1
       temp_r_queue = []
 
-      reactions_queue.each do |reaction|
-        temp_r_queue.push(reaction) if SEED.rand(200) < reaction[1] + 100
+      seeded = SEED.rand(200)
+      queue.each do |perceptron|
+        temp_r_queue.push(perceptron) if seeded > perceptron.width + 100
       end
 
-      next if reactions_queue.size - temp_r_queue.size < 1
+      next if queue.size - temp_r_queue.size < 1
 
-      temp_r_queue.each do |tmp_r|
-        reactions_queue.delete_at(reactions_queue.index(tmp_r) || reactions_queue.length)
+      temp_r_queue.each do |perceptron|
+        queue.delete(perceptron)
       end
     end
 
     full_death if @energy >= 2000
-    Neiron.send(REACTIONS[reactions_queue[0][0]], self)
+    Neiron.send(perceptron.reaction, self)
   end
+  ####################################################
 
   def full_death
     @energy = 0
@@ -1200,9 +1215,10 @@ on :key_down do |event|
     end
     PAUSE = false
   elsif event.key == '2'
-    first_brain = {
-      nothing_happens: [[1, 10], [0, 0]]
-    }
+    first_brain = [
+      Perceptron.new(:nothing_happens, :photosynthesis, 10),
+      Perceptron.new(:nothing_happens, :born, 0)
+    ]
 
     # Place where we create our first bacteria
     # color, current_cell, energy, brain, memory, organs, name = 'Unknown', description = 'Unknown'
