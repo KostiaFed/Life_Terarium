@@ -1,3 +1,6 @@
+require 'ruby2d'
+require 'pickup'
+
 p 'Choose monitor:'
 p '1. Laptop'
 p '2. Square monitor'
@@ -12,8 +15,6 @@ def self.ws(convert)
 end
 
 CELL_SIZE = 10 * WINDOW_SIZE_COO
-
-require 'ruby2d'
 
 set width: ws(1200), height: ws(990)
 
@@ -334,13 +335,14 @@ class Cell
   end
 
   def burst
-    Sprite.new(
-      'boom.png',
-      clip_width: 127,
-      time: 75,
-      x: @x_id * CELL_SIZE + 0.25 * CELL_SIZE,
-      y: @y_id * CELL_SIZE + 0.25 * CELL_SIZE
-    ).play
+    #Need to be repainted
+    #Sprite.new(
+    #  'boom.png',
+    #  clip_width: 127,
+    #  time: 75,
+    #  x: @x_id * CELL_SIZE + 0.25 * CELL_SIZE,
+    #  y: @y_id * CELL_SIZE + 0.25 * CELL_SIZE
+    #).play
   end
 
   def unmark_it
@@ -371,7 +373,7 @@ class Cell
 
   def alives
     alives = []
-    neighs.each do |neigh|
+    @neighs.each do |neigh|
       alives.push(neigh) if !neigh.homie.nil? && !neigh.homie.corpse
     end
 
@@ -380,7 +382,7 @@ class Cell
 
   def corpses
     homies = []
-    neighs.each do |neigh|
+    @neighs.each do |neigh|
       homies.push(neigh) if !neigh.homie.nil? && neigh.homie.corpse
     end
 
@@ -389,7 +391,7 @@ class Cell
 
   def homies
     homies = []
-    neighs.each do |neigh|
+    @neighs.each do |neigh|
       homies.push(neigh) unless neigh.homie.nil?
     end
 
@@ -398,7 +400,7 @@ class Cell
 
   def free
     free = []
-    neighs.each do |neigh|
+    @neighs.each do |neigh|
       free.push(neigh) if neigh.homie.nil?
     end
 
@@ -414,7 +416,6 @@ class Cell
   end
 
   def set_color(color)
-    color = color.delete('-')
     @body.color = color
   end
 end
@@ -552,7 +553,7 @@ class Neiron
   # broken
   def self.burst(bacteria)
     # kill all alive in 3n3
-    bacteria.current_cell.homies.each do |sad|
+    bacteria.current_cell.alives.each do |sad|
       sad.homie.death
     end
 
@@ -710,7 +711,7 @@ class Neiron
       string.push(
         perceptron.trigger.to_s +
         ': ' + perceptron.reaction.to_s +
-        ' | ' + perceptron.reaction.width
+        ' | ' + perceptron.width.to_s
       )
     end
 
@@ -801,13 +802,13 @@ class Neiron
     formed = SEED.rand(2)
 
     rgb[seeded] += if formed == 0
-                     1
-                   else
-                     -1
-                   end
-
+                      1
+                    else
+                      -1
+                    end
+    
     rgb[seeded] = 254 if rgb[seeded] > 254
-    rgb[seeded] = 127 if rgb[seeded] < 127
+    rgb[seeded] = 126 if rgb[seeded] < 126
 
     '#' + rgb[0].to_s(16).rjust(2, '0') + rgb[1].to_s(16).rjust(2, '0') + rgb[2].to_s(16).rjust(2, '0')
   end
@@ -888,7 +889,7 @@ class Neiron
     seeded_trigger = SEED.rand(TRIGGERS.size)
     seeded_reaction = SEED.rand(REACTIONS.size)
     trigger = TRIGGERS[seeded_trigger]
-    reaction = TRIGGERS[seeded_reaction]
+    reaction = REACTIONS[seeded_reaction]
 
     brain.push(Perceptron.new(trigger, reaction, 0))
 
@@ -904,7 +905,7 @@ class Neiron
 
     return brain unless seeded == 0
 
-    formed = SEED.rand(5)
+    formed = SEED.rand(BRAIN_MUTATORS.size)
 
     Neiron.send(BRAIN_MUTATORS[formed], brain)
 
@@ -955,6 +956,7 @@ class Bacteria
   end
 
   def self.deserialize(file_name)
+    return if file_name.nil?
     file_name = 'saves/' + file_name
     return unless File.exist?(file_name)
 
@@ -986,6 +988,12 @@ class Bacteria
     @name = name
     @description = description
 
+    hashed_brain = []
+      
+    brain.each do |perceptron|
+      hashed_brain.push(perceptron.to_hash)
+    end
+
     save_hash = {
       name: @name,
       description: @description,
@@ -993,15 +1001,34 @@ class Bacteria
       memory: @memory,
       organs: @organs,
       energy: @energy,
-      brain: brain.each { |perceptron| perceptron.to_hash }
+      brain: hashed_brain
     }
     Dir.mkdir('saves') unless Dir.exist?('saves')
     File.open('saves/' + name, 'w') { |f| f.write save_hash.to_s }
   end
 
   ################################################
-  # REFACTORY!
-  def add_energy
+  def pick_reaction(queue)
+    sum = 0
+    chances = {}
+
+    queue.each do |perceptron|
+      sum += perceptron.width + 100
+    end
+    
+    queue.each do |perceptron|
+      if chances[perceptron.reaction].nil?
+        chances[perceptron.reaction] = (perceptron.width + 100).to_f/sum * 100
+      else
+        chances[perceptron.reaction] += (perceptron.width + 100).to_f/sum * 100
+      end
+    end
+
+    pickup = Pickup.new(chances)
+    pickup.pick(1)
+  end
+
+  def iterate
     death if @energy <= 0
 
     return if corpse || disappeared || brain.empty?
@@ -1014,23 +1041,8 @@ class Bacteria
 
     return if queue.empty?
 
-    while queue.size > 1
-      temp_r_queue = []
-
-      seeded = SEED.rand(200)
-      queue.each do |perceptron|
-        temp_r_queue.push(perceptron) if seeded > perceptron.width + 100
-      end
-
-      next if queue.size - temp_r_queue.size < 1
-
-      temp_r_queue.each do |perceptron|
-        queue.delete(perceptron)
-      end
-    end
-
     full_death if @energy >= 2000
-    Neiron.send(perceptron.reaction, self)
+    Neiron.send(pick_reaction(queue), self)
   end
   ####################################################
 
@@ -1222,7 +1234,7 @@ on :key_down do |event|
 
     # Place where we create our first bacteria
     # color, current_cell, energy, brain, memory, organs, name = 'Unknown', description = 'Unknown'
-    WORLD.life.push(Bacteria.new('#777777', WORLD.map[50][50], 50, first_brain, [], ['leaf'], 'Adam', 'the First', 5,
+    WORLD.life.push(Bacteria.new('#777777', WORLD.map[50][50], 50, first_brain, [], [:leaf], 'Adam', 'the First', 5,
                                  1))
   elsif event.key == 'p'
     PAUSE = !PAUSE
@@ -1246,7 +1258,7 @@ update do
       if !(@name_to_mark == '') && (@name_to_mark == bactera.name) && !bactera.current_cell.marked
         mark_this(bactera.current_cell)
       end
-      bactera.add_energy
+      bactera.iterate
 
       next unless bactera.disappeared
 

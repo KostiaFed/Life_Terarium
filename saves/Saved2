@@ -1,0 +1,1 @@
+{:name=>"Saved2", :description=>"15.12.2023", :color=>"#808083", :memory=>[], :organs=>[:leaf], :energy=>1371, :brain=>[{:trigger=>:nothing_happens, :reaction=>:photosynthesis, :width=>8}, {:trigger=>:nothing_happens, :reaction=>:born, :width=>0}]}

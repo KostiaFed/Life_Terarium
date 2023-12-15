@@ -1,0 +1,1 @@
+{:name=>"Night hunter", :description=>"I generation of meat-eaters", :color=>"#83817f", :memory=>[], :organs=>[:jaws], :energy=>50, :brain=>[{:trigger=>:nothing_happens, :reaction=>:born, :width=>1}, {:trigger=>:is_night, :reaction=>:hunt, :width=>2}]}
